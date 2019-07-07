@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:aula_flutter_task_list/utils/layoutBuilders.dart';
 
 class Home extends StatelessWidget {
-  List _toDoList = [];
+  List _toDoList = ["Rafael","Batista"];
 
   @override
   Widget build(BuildContext context) {
@@ -13,6 +13,10 @@ class Home extends StatelessWidget {
       appBar: buildAppBar(),
       body: buildBody(),
     );
+  }
+
+  List get getList{
+    return _toDoList;
   }
 
   Future<File> _getFile() async{
