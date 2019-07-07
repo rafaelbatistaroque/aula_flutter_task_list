@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:aula_flutter_task_list/utils/layoutBuilders.dart';
+import 'package:aula_flutter_task_list/utils/layout.builders.dart';
 
 class Home extends StatelessWidget {
   List _toDoList = ["Rafael","Batista"];
@@ -18,24 +17,7 @@ class Home extends StatelessWidget {
   List get getList{
     return _toDoList;
   }
-
-  Future<File> _getFile() async{
-    final directory = await getApplicationDocumentsDirectory();
-    return File("${directory.path}/data.json");
+  set setList(String value){
+    _toDoList.add(value);
   }
-  Future<File> _saveData() async{
-    String data = json.encode(_toDoList);
-    final file = await _getFile();
-    return file.writeAsString(data);
-  }
-
-  Future<String> _readData() async{
-    try{
-      final file = await _getFile();
-      return file.readAsString();
-    }catch (e){
-      return null; 
-    }
-  }
-
 }
