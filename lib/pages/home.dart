@@ -2,13 +2,16 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:aula_flutter_task_list/utils/layoutBuilders.dart';
 
 class Home extends StatelessWidget {
   List _toDoList = [];
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Scaffold(
+      appBar: buildAppBar(),
+      body: buildBody(),
     );
   }
 
