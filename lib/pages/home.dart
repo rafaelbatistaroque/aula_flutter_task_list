@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:aula_flutter_task_list/domain/task.dart';
-
-final toDoCrtl = TextEditingController();
-Task taskClass = Task();
+import 'package:path_provider/path_provider.dart';
+import 'dart:convert';
+import 'dart:io';
 
 class Home extends StatefulWidget {
   @override
@@ -10,12 +9,25 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  List _toDoList = [];
+  final toDoCrtl = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: buildAppBar(),
       body: buildBody(),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _readData().then((data){
+      setState(() {
+       _toDoList = json.decode(data); 
+      });
+    });
   }
 
   void _addTask() {
@@ -26,10 +38,29 @@ class _HomeState extends State<Home> {
       print(toDoCrtl.text);
       toDoCrtl.text = "";
       newTask["completed"] = false;
-      taskClass.setList(newTask);
+      _toDoList.add(newTask);
+
+      _saveData();
     });
   }
-
+//Management file and directory
+  Future<File> _getFile() async{
+    final directory = await getApplicationDocumentsDirectory();
+    return File("${directory.path}/data.json");
+  }
+  Future<File> _saveData() async{
+    String data = json.encode(_toDoList);
+    final file = await _getFile();
+    return file.writeAsString(data);
+  }
+  Future<String> _readData() async{
+    try{
+      final file = await _getFile();
+      return file.readAsString();
+    }catch (e){
+      return null; 
+    }
+  }
 //Builder of AppBar
   Widget buildAppBar() {
     return AppBar(
@@ -80,18 +111,19 @@ class _HomeState extends State<Home> {
     return Expanded(
       child: ListView.builder(
           padding: EdgeInsets.only(top: 10),
-          itemCount: taskClass.getList.length,
+          itemCount: _toDoList.length,
           itemBuilder: (context, index) {
             return CheckboxListTile(
-              title: Text(taskClass.getList[index]["title"]),
-              value: taskClass.getList[index]["completed"],
+              title: Text(_toDoList[index]["title"]),
+              value: _toDoList[index]["completed"],
               secondary: CircleAvatar(
-                  child: Icon(taskClass.getList[index]["completed"]
+                  child: Icon(_toDoList[index]["completed"]
                       ? Icons.check_circle
                       : Icons.error, size: 35,)),
               onChanged: (bool check) {
                 setState(() {
-                  taskClass.checkList(index, check); 
+                  _toDoList[index]["completed"] = check;
+                  _saveData();
                 });
               },
             );
