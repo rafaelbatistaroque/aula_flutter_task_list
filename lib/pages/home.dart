@@ -20,7 +20,6 @@ class _HomeState extends State<Home> {
 
   void _addTask() {
     setState(() {
-      Task task = Task();
       Map<String, dynamic> newTask = Map();
 
       newTask["title"] = toDoCrtl.text;
@@ -89,7 +88,7 @@ class _HomeState extends State<Home> {
               secondary: CircleAvatar(
                   child: Icon(taskClass.getList[index]["completed"]
                       ? Icons.check_circle
-                      : Icons.error)),
+                      : Icons.error, size: 35,)),
               onChanged: (bool check) {
                 setState(() {
                   taskClass.checkList(index, check); 

@@ -5,7 +5,9 @@ import 'dart:io';
 class Task {
   final List _toDoList = [];
     
-  List get getList{return _toDoList;}
+  List get getList{
+    return _toDoList;
+  }
   void setList(Map task) => _toDoList.add(task);
 
   void checkList(int index, bool check){
