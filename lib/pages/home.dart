@@ -163,8 +163,8 @@ class _HomeState extends State<Home> {
     await Future.delayed(Duration(seconds: 1));
     setState(() {
       _toDoList.sort((a, b){
-        if(a["ok"] && !b["ok"]) return 1;
-        else if(!a["ok"] && b["ok"]) return -1;
+        if(a["completed"] && !b["completed"]) return 1;
+        else if(!a["completed"] && b["completed"]) return -1;
         else return 0;
       });
       _saveData(); 
