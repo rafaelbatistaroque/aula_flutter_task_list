@@ -16,14 +16,6 @@ class _HomeState extends State<Home> {
   final toDoCrtl = TextEditingController();
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: buildAppBar(),
-      body: buildBody(),
-    );
-  }
-
-  @override
   void initState() {
     super.initState();
     _readData().then((data){
@@ -33,37 +25,14 @@ class _HomeState extends State<Home> {
     });
   }
 
-  void _addTask() {
-    setState(() {
-      Map<String, dynamic> newTask = Map();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: buildAppBar(),
+      body: buildBody(),
+    );
+  }
 
-      newTask["title"] = toDoCrtl.text;
-      print(toDoCrtl.text);
-      toDoCrtl.text = "";
-      newTask["completed"] = false;
-      _toDoList.add(newTask);
-
-      _saveData();
-    });
-  }
-//Management file and directory
-  Future<File> _getFile() async{
-    final directory = await getApplicationDocumentsDirectory();
-    return File("${directory.path}/data.json");
-  }
-  Future<File> _saveData() async{
-    String data = json.encode(_toDoList);
-    final file = await _getFile();
-    return file.writeAsString(data);
-  }
-  Future<String> _readData() async{
-    try{
-      final file = await _getFile();
-      return file.readAsString();
-    }catch (e){
-      return null; 
-    }
-  }
 //Builder of AppBar
   Widget buildAppBar() {
     return AppBar(
@@ -112,36 +81,39 @@ class _HomeState extends State<Home> {
 //Builder of task list added
   Widget buildListTask() {
     return Expanded(
-      child: ListView.builder(
+      child: RefreshIndicator(
+        onRefresh: _refreshListTask,
+        child: ListView.builder(
           padding: EdgeInsets.only(top: 10),
           itemCount: _toDoList.length,
-          itemBuilder: buildTask),
+          itemBuilder: buildTask)
+      )
     );
   }
   Widget buildTask(BuildContext context, int index){
-  return Dismissible(
-    key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
-    background: Container(
-      color: Colors.red,
-      child: Align(
-        alignment: Alignment(-0.9, 0),
-        child: Icon(Icons.delete, color: Colors.white)
-        )),
-    direction: DismissDirection.startToEnd,
-      child: CheckboxListTile(
-      title: Text(_toDoList[index]["title"]),
-      value: _toDoList[index]["completed"],
-      secondary: CircleAvatar(
-          child: Icon(_toDoList[index]["completed"]
-              ? Icons.check_circle
-              : Icons.error, size: 35,)),
-      onChanged: (bool check) {
-        setState(() {
-          _toDoList[index]["completed"] = check;
-          _saveData();
-        });
-      },
-    ),
+    return Dismissible(
+      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+      background: Container(
+        color: Colors.red,
+        child: Align(
+          alignment: Alignment(-0.9, 0),
+          child: Icon(Icons.delete, color: Colors.white)
+          )),
+      direction: DismissDirection.startToEnd,
+        child: CheckboxListTile(
+          title: Text(_toDoList[index]["title"]),
+          value: _toDoList[index]["completed"],
+          secondary: CircleAvatar(
+              child: Icon(_toDoList[index]["completed"]
+                  ? Icons.check_circle
+                  : Icons.error, size: 35,)),
+          onChanged: (bool check) {
+            setState(() {
+              _toDoList[index]["completed"] = check;
+              _saveData();
+            });
+          },
+        ),
     onDismissed: (direction){
       setState(() {
         _lastRemoved = Map.from(_toDoList[index]);
@@ -150,21 +122,71 @@ class _HomeState extends State<Home> {
 
         _saveData(); 
 
-        final snack = SnackBar(
-          content: Text("tarefa " + _lastRemoved["title"] + " removida."),
-          action: SnackBarAction(
-            label: "Desfazer",
-            onPressed: (){
-              setState(() {
-                _toDoList.insert(_lastRemovedPos, _lastRemoved); 
-                _saveData();
-              });
-            }),
-          duration: Duration(seconds: 4),
-        );
+        final snack = buildSnack();
         Scaffold.of(context).showSnackBar(snack);
       });
     },
   );
+  }
+  //Builder SnackBar
+  Widget buildSnack(){
+    return SnackBar(
+            content: Text("tarefa " + _lastRemoved["title"] + " removida."),
+            action: SnackBarAction(
+              label: "Desfazer",
+              onPressed: (){
+                setState(() {
+                  _toDoList.insert(_lastRemovedPos, _lastRemoved); 
+                  _saveData();
+                });
+              }),
+            duration: Duration(seconds: 4),
+          );
+  } 
+
+//Added new task
+  void _addTask() {
+    setState(() {
+      Map<String, dynamic> newTask = Map();
+
+      newTask["title"] = toDoCrtl.text;
+      print(toDoCrtl.text);
+      toDoCrtl.text = "";
+      newTask["completed"] = false;
+      _toDoList.add(newTask);
+
+      _saveData();
+    });
+  }
+//Delay refresh and sort list
+  Future<Null> _refreshListTask() async {
+    await Future.delayed(Duration(seconds: 1));
+    setState(() {
+      _toDoList.sort((a, b){
+        if(a["ok"] && !b["ok"]) return 1;
+        else if(!a["ok"] && b["ok"]) return -1;
+        else return 0;
+      });
+      _saveData(); 
+    });
+    return null;
+  }
+//Management file and directory
+  Future<File> _getFile() async{
+    final directory = await getApplicationDocumentsDirectory();
+    return File("${directory.path}/data.json");
+  }
+  Future<File> _saveData() async{
+    String data = json.encode(_toDoList);
+    final file = await _getFile();
+    return file.writeAsString(data);
+  }
+  Future<String> _readData() async{
+    try{
+      final file = await _getFile();
+      return file.readAsString();
+    }catch (e){
+      return null; 
+    }
   }
 }
